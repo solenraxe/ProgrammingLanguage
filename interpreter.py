@@ -47,7 +47,8 @@ def varInter(args):
         vars.setVar(args["name"], currentValue ** args["value"])
 
 def printInter(args):
-    print(args["value"])
+    consoleValue = vars.getVar("console") or ""
+    vars.setVar("console", consoleValue + "\n" + str(args["value"]))
 
 def runLine(line):
     args = line.split(" ")
@@ -62,7 +63,7 @@ def runLine(line):
         if len(args) < 5 or varType == "int":
             value = int(args[3])
         elif varType == "str":
-            value = args[4]
+            value = " ".join(args[4:])
         elif varType == "bool":
             value = args[4].lower() == "true"
         varInter({
@@ -81,7 +82,7 @@ def runLine(line):
             args = args[4:]
             runLine(" ".join(args))
     elif args[0] == "print":
-        value = vars.getVar(args[1]) or args[1]
+        value = vars.getVar(args[1]) or " ".join(args[1:])
         printInter({
             "value": value
         })
