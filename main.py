@@ -19,8 +19,8 @@ lineNumber = 0
 
 deleting = False
 
-def run():
-    global text
+def run(text):
+    print("Running code:")
     lines = text.split("\n")
     for line in lines:
         inter.runLine(line)
@@ -41,6 +41,8 @@ while running:
                 lineNumber += 1
             elif event.key == pg.K_TAB:
                 text += "    "
+            elif event.key == pg.K_LCTRL:
+                run(text)
             else:
                 text += event.unicode
         elif event.type == pg.KEYUP:
