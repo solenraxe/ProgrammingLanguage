@@ -1,5 +1,5 @@
 global vars
-vars = {"console": "SolPy Console :"}
+vars = {"console": "Console :"}
 
 def setVar(name, value):
     vars[name] = value
