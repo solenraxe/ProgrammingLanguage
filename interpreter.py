@@ -52,9 +52,21 @@ def printInter(args):
     vars.setVar("console", consoleValue + "\n" + str(args["value"]))
 
 def whileInter(args):
+    obj1var = vars.getVar(args["ifArgs"]["obj1"]) and args["ifArgs"]["obj1"]
+    obj2var = vars.getVar(args["ifArgs"]["obj2"]) and args["ifArgs"]["obj2"]
+    if obj1var:
+        args["ifArgs"]["obj1"] = vars.getVar(args["ifArgs"]["obj1"])
+    if obj2var:
+        args["ifArgs"]["obj2"] = vars.getVar(args["ifArgs"]["obj2"])
+
     while ifInter(args["ifArgs"]):
-        args["ifArgs"]["obj1"] = vars.getVar(args["ifArgs"]["obj1"]) or int(args["ifArgs"]["obj1"])
-        args["ifArgs"]["obj2"] = vars.getVar(args["ifArgs"]["obj2"]) or int(args["ifArgs"]["obj2"])
+        if obj1var: args["ifArgs"]["obj1"] = vars.getVar(obj1var)
+        if obj2var: args["ifArgs"]["obj2"] = vars.getVar(obj2var)
+        runLine(args["line"])
+
+def forInter(args):
+    for i in range(args["begin"], args["end"], args["step"]):
+        vars.setVar(args["variableName"], i)
         runLine(args["line"])
 
 def runVar(args):
@@ -86,22 +98,30 @@ def runIf(args):
         runLine(" ".join(args))
 
 def runWhile(args):
-    obj1 = vars.getVar(args[0]) or int(args[0])
-    obj2 = vars.getVar(args[2]) or int(args[2])
     comp = args[1]
     newArgs = {
         "ifArgs": {
-            "obj1": obj1,
+            "obj1": args[0],
             "comp": comp,
-            "obj2": obj2
+            "obj2": args[2]
         },
         "line": " ".join(args[3:])
     }
     whileInter(newArgs)
 
+def runFor(args):
+    forArgs = {
+        "begin": int(args[1]),
+        "end": int(args[2]),
+        "step": int(args[3]),
+        "variableName": args[0],
+        "line": " ".join(args[4:])
+    }
+    forInter(forArgs)
+
 def runLine(line):
     args = line.split(" ")
-    print("Running line:", line)
+    #print("Running line:", line)
 
     if not args:
         return
@@ -117,5 +137,7 @@ def runLine(line):
         })
     elif args[0] == "while":
         runWhile(args[1:])
+    elif args[0] == "for":
+        runFor(args[1:])
     else:
         runVar(args)
