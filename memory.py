@@ -22,7 +22,7 @@ def deleteFunc(name):
     if name in funcs:
         del funcs[name]
 
-def clearMemory():
+def clear():
     global vars, funcs
     oldConsole = getVar("console")
     vars = {"console": oldConsole}

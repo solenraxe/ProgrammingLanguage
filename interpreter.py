@@ -1,6 +1,4 @@
-from pyxel import line
-
-import variablesMemory as vars
+import memory
 
 global currentLine, currentScript
 currentLine = 0
@@ -40,50 +38,50 @@ def ifInter(args):
 def varInter(args):
     assignMode = args["mode"]
 
-    currentValue = vars.getVar(args["name"])
+    currentValue = memory.getVar(args["name"])
     if currentValue is None:
-        vars.setVar(args["name"], 0)
+        memory.setVar(args["name"], 0)
         currentValue = 0
 
     if assignMode == "=" or assignMode == "is" or assignMode == "":
-        vars.setVar(args["name"], args["value"])
+        memory.setVar(args["name"], args["value"])
     elif assignMode == "+":
-        vars.setVar(args["name"], currentValue + args["value"])
+        memory.setVar(args["name"], currentValue + args["value"])
     elif assignMode == "-":
-        vars.setVar(args["name"], currentValue - args["value"])
+        memory.setVar(args["name"], currentValue - args["value"])
     elif assignMode == "*":
-        vars.setVar(args["name"], currentValue * args["value"])
+        memory.setVar(args["name"], currentValue * args["value"])
     elif assignMode == "/":
-        vars.setVar(args["name"], currentValue / args["value"])
+        memory.setVar(args["name"], currentValue / args["value"])
     elif assignMode == "%":
-        vars.setVar(args["name"], currentValue % args["value"])
+        memory.setVar(args["name"], currentValue % args["value"])
     elif assignMode == "**":
-        vars.setVar(args["name"], currentValue ** args["value"])
+        memory.setVar(args["name"], currentValue ** args["value"])
 
 def printInter(args):
-    consoleValue = vars.getVar("console") or ""
-    vars.setVar("console", consoleValue + "\n" + str(args["value"]))
+    consoleValue = memory.getVar("console") or ""
+    memory.setVar("console", consoleValue + "\n" + str(args["value"]))
 
 def whileInter(args):
-    obj1var = vars.getVar(args["ifArgs"]["obj1"]) and args["ifArgs"]["obj1"]
-    obj2var = vars.getVar(args["ifArgs"]["obj2"]) and args["ifArgs"]["obj2"]
+    obj1var = memory.getVar(args["ifArgs"]["obj1"]) and args["ifArgs"]["obj1"]
+    obj2var = memory.getVar(args["ifArgs"]["obj2"]) and args["ifArgs"]["obj2"]
     if obj1var:
-        args["ifArgs"]["obj1"] = vars.getVar(args["ifArgs"]["obj1"])
+        args["ifArgs"]["obj1"] = memory.getVar(args["ifArgs"]["obj1"])
     if obj2var:
-        args["ifArgs"]["obj2"] = vars.getVar(args["ifArgs"]["obj2"])
+        args["ifArgs"]["obj2"] = memory.getVar(args["ifArgs"]["obj2"])
 
     while ifInter(args["ifArgs"]):
-        if obj1var: args["ifArgs"]["obj1"] = vars.getVar(obj1var)
-        if obj2var: args["ifArgs"]["obj2"] = vars.getVar(obj2var)
+        if obj1var: args["ifArgs"]["obj1"] = memory.getVar(obj1var)
+        if obj2var: args["ifArgs"]["obj2"] = memory.getVar(obj2var)
         for line in args["lines"]:
             runLine(line)
 
 def forInter(args):
     for i in range(args["begin"], args["end"], args["step"]):
-        vars.setVar(args["variableName"], i)
+        memory.setVar(args["variableName"], i)
         for line in args["lines"]:
             runLine(line)
-    vars.deleteVar(args["variableName"])
+    memory.deleteVar(args["variableName"])
 
 def runVar(args):
     varType = args[2]
@@ -95,7 +93,7 @@ def runVar(args):
     elif varType == "truth" or varType == "bool":
         value = args[3].lower() == "true"
     elif varType == "var":
-        value = vars.getVar(args[3]) or 0
+        value = memory.getVar(args[3]) or 0
     varInter({
         "name": args[0],
         "mode": args[1],
@@ -104,8 +102,8 @@ def runVar(args):
 
 def runIf(args):
     global currentLine, currentScript
-    obj1 = vars.getVar(args[0]) or int(args[0])
-    obj2 = vars.getVar(args[2]) or int(args[2])
+    obj1 = memory.getVar(args[0]) or int(args[0])
+    obj2 = memory.getVar(args[2]) or int(args[2])
     if ifInter({
         "obj1": obj1,
         "comp": args[1],
@@ -143,13 +141,13 @@ def runFor(args):
     forInter(forArgs)
 
 def runFunc(args):
-    if not vars.getFunc(args[0]):
+    if not memory.getFunc(args[0]):
         lines = getFollowingLines()
-        vars.setFunc(args[0], {
+        memory.setFunc(args[0], {
             "lines": lines
         })
     else:
-        func = vars.getFunc(args[0])
+        func = memory.getFunc(args[0])
         for line in func["lines"]:
             runLine(line)
 
@@ -165,7 +163,7 @@ def runLine(line):
     elif args[0] == "if":
         runIf(args[1:])
     elif args[0] == "print":
-        value = vars.getVar(args[1]) or " ".join(args[1:])
+        value = memory.getVar(args[1]) or " ".join(args[1:])
         printInter({
             "value": value
         })

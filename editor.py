@@ -1,6 +1,12 @@
 import pygame as pg
+import os
 import interpreter as inter
-import variablesMemory as vars
+import memory
+
+scriptExists = os.path.exists("script.txt")
+if not scriptExists:
+    with open("script.txt", "w") as f:
+        f.write("print Hello, World!")
 
 pg.init()
 pg.font.init()
@@ -12,18 +18,21 @@ WIDTH, HEIGHT = 800, 600
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 clock = pg.time.Clock()
 
+icon = pg.image.load("SolPy.png")
 pg.display.set_caption("SolPy")
-#pg.display.set_icon()
+pg.display.set_icon(icon)
 
 text = ""
+with open("script.txt", "r") as f:
+    text = f.read()
 lineNumber = 0
 
 deleting = False
-editIndex = 0
+editIndex = len(text)
 
 def run(text):
     print("Running code...")
-    vars.clearMemory()
+    memory.clear()
     lines = text.split("\n")
     inter.currentScript = lines
     inter.currentLine = 0
@@ -58,6 +67,7 @@ while running:
             elif event.unicode:
                 text = text[:editIndex] + event.unicode + text[editIndex:]
                 editIndex += 1
+                
         elif event.type == pg.KEYUP:
             if event.key == pg.K_BACKSPACE:
                 deleting = False
@@ -67,7 +77,7 @@ while running:
         editIndex = max(0, editIndex - 1)
 
     screen.fill((0, 0, 0))
-    text_to_render = text[:editIndex] + "|" + text[editIndex:] if framecount % 60 < 45 else text
+    text_to_render = text[:editIndex] + "|" + text[editIndex:] if framecount % 60 < 35 else text
     rendered_text = comicSans.render(text_to_render, True, (255, 255, 255))
     screen.blit(rendered_text, (50, 20))
 
@@ -75,8 +85,13 @@ while running:
         number_text = comicSans.render(str(i+1) + ".", True, (255, 255, 255))
         screen.blit(number_text, (20, 20 + i * 28))
 
-    console_text = comicSans.render(vars.getVar("console"), True, (255, 255, 255))
+    console_text = comicSans.render(memory.getVar("console"), True, (255, 255, 255))
     screen.blit(console_text, (50, HEIGHT - 180))
 
     pg.display.flip()
     clock.tick(60)
+
+pg.quit()
+
+with open("script.txt", "w") as f:
+    f.write(text)
