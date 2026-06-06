@@ -6,6 +6,15 @@ global currentLine, currentScript
 currentLine = 0
 currentScript = []
 
+def getFollowingLines():
+    global currentLine, currentScript
+    lines = []
+    i = 1
+    while currentLine + i < len(currentScript) and currentScript[currentLine + i].startswith("- "):
+        lines.append(currentScript[currentLine + i][2:])
+        i += 1
+    return lines
+
 def ifInter(args):
     comparators = args["comp"]
     if not comparators:
@@ -66,12 +75,15 @@ def whileInter(args):
     while ifInter(args["ifArgs"]):
         if obj1var: args["ifArgs"]["obj1"] = vars.getVar(obj1var)
         if obj2var: args["ifArgs"]["obj2"] = vars.getVar(obj2var)
-        runLine(args["line"])
+        for line in args["lines"]:
+            runLine(line)
 
 def forInter(args):
     for i in range(args["begin"], args["end"], args["step"]):
         vars.setVar(args["variableName"], i)
-        runLine(args["line"])
+        for line in args["lines"]:
+            runLine(line)
+    vars.deleteVar(args["variableName"])
 
 def runVar(args):
     varType = args[2]
@@ -99,38 +111,53 @@ def runIf(args):
         "comp": args[1],
         "obj2": obj2
     }):
-        i = 1
-        while currentScript[currentLine + i].startswith("- ") and currentLine + i < len(currentScript):
-            runLine(currentScript[currentLine + i][2:])
-            i += 1
+        for line in getFollowingLines():
+            runLine(line)
 
 def runWhile(args):
+    global currentLine, currentScript
     comp = args[1]
+    lines = getFollowingLines()
+
     newArgs = {
         "ifArgs": {
             "obj1": args[0],
             "comp": comp,
             "obj2": args[2]
         },
-        "line": " ".join(args[3:])
+        "lines": lines
     }
     whileInter(newArgs)
 
 def runFor(args):
+    global currentLine, currentScript
+    lines = getFollowingLines()
+
     forArgs = {
         "begin": int(args[1]),
         "end": int(args[2]),
         "step": int(args[3]),
         "variableName": args[0],
-        "line": " ".join(args[4:])
+        "lines": lines
     }
     forInter(forArgs)
+
+def runFunc(args):
+    if not vars.getFunc(args[0]):
+        lines = getFollowingLines()
+        vars.setFunc(args[0], {
+            "lines": lines
+        })
+    else:
+        func = vars.getFunc(args[0])
+        for line in func["lines"]:
+            runLine(line)
 
 def runLine(line):
     args = line.split(" ")
     #print("Running line:", line)
 
-    if not args or line.startswith("- ") or line.startswith("#"):
+    if not args or line.startswith("- ") or line.startswith("#") or args[0] == "":
         return
     
     if args[0] == "var":
@@ -146,5 +173,7 @@ def runLine(line):
         runWhile(args[1:])
     elif args[0] == "for":
         runFor(args[1:])
+    elif args[0] == "func":
+        runFunc(args[1:])
     else:
         runVar(args)

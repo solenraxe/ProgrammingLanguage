@@ -23,6 +23,7 @@ editIndex = 0
 
 def run(text):
     print("Running code...")
+    vars.clearMemory()
     lines = text.split("\n")
     inter.currentScript = lines
     inter.currentLine = 0
@@ -42,19 +43,21 @@ while running:
             if event.key == pg.K_BACKSPACE:
                 deleting = True
             elif event.key == pg.K_RETURN:
-                text += "\n"
+                text = text[:editIndex] + "\n" + text[editIndex:]
                 lineNumber += 1
+                editIndex += 1
             elif event.key == pg.K_TAB:
-                text += "    "
+                text = text[:editIndex] + "- " + text[editIndex:]
+                editIndex += 2
             elif event.key == pg.K_LEFT:
                 editIndex = max(0, editIndex - 1)
             elif event.key == pg.K_RIGHT:
                 editIndex = min(len(text), editIndex + 1)
             elif event.key == pg.K_LCTRL:
                 run(text)
-            else:
+            elif event.unicode:
+                text = text[:editIndex] + event.unicode + text[editIndex:]
                 editIndex += 1
-                text = text[:editIndex-1] + event.unicode + text[editIndex-1:]
         elif event.type == pg.KEYUP:
             if event.key == pg.K_BACKSPACE:
                 deleting = False
@@ -64,7 +67,7 @@ while running:
         editIndex = max(0, editIndex - 1)
 
     screen.fill((0, 0, 0))
-    text_to_render = text[:editIndex] + "|" + text[editIndex:] if framecount % 60 < 30 else text
+    text_to_render = text[:editIndex] + "|" + text[editIndex:] if framecount % 60 < 45 else text
     rendered_text = comicSans.render(text_to_render, True, (255, 255, 255))
     screen.blit(rendered_text, (50, 20))
 
