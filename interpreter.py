@@ -60,7 +60,7 @@ def varInter(args):
 
 def printInter(args):
     consoleValue = memory.getVar("console") or ""
-    memory.setVar("console", consoleValue + "\n" + str(args["value"]))
+    memory.setVar("console", consoleValue + "\n" + "  " + str(args["value"]))
 
 def whileInter(args):
     obj1var = memory.getVar(args["ifArgs"]["obj1"]) and args["ifArgs"]["obj1"]
