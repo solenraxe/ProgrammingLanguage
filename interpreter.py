@@ -2,6 +2,10 @@ from pyxel import line
 
 import variablesMemory as vars
 
+global currentLine, currentScript
+currentLine = 0
+currentScript = []
+
 def ifInter(args):
     comparators = args["comp"]
     if not comparators:
@@ -87,6 +91,7 @@ def runVar(args):
     })
 
 def runIf(args):
+    global currentLine, currentScript
     obj1 = vars.getVar(args[0]) or int(args[0])
     obj2 = vars.getVar(args[2]) or int(args[2])
     if ifInter({
@@ -94,8 +99,10 @@ def runIf(args):
         "comp": args[1],
         "obj2": obj2
     }):
-        args = args[3:]
-        runLine(" ".join(args))
+        i = 1
+        while currentScript[currentLine + i].startswith("- ") and currentLine + i < len(currentScript):
+            runLine(currentScript[currentLine + i][2:])
+            i += 1
 
 def runWhile(args):
     comp = args[1]
@@ -123,7 +130,7 @@ def runLine(line):
     args = line.split(" ")
     #print("Running line:", line)
 
-    if not args:
+    if not args or line.startswith("- ") or line.startswith("#"):
         return
     
     if args[0] == "var":

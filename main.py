@@ -22,10 +22,13 @@ deleting = False
 editIndex = 0
 
 def run(text):
-    print("Running code:")
+    print("Running code...")
     lines = text.split("\n")
+    inter.currentScript = lines
+    inter.currentLine = 0
     for line in lines:
         inter.runLine(line)
+        inter.currentLine += 1
 
 framecount = 0
 running = True
