@@ -13,6 +13,7 @@ pg.font.init()
 
 comicSans = pg.font.SysFont("Comic Sans MS", 20)
 
+display_info = pg.display.Info()
 WIDTH, HEIGHT = 800, 600
 
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -23,11 +24,13 @@ pg.display.set_caption("SolPy")
 pg.display.set_icon(icon)
 
 text = ""
+lineNumber = 0
 with open("script.txt", "r") as f:
     text = f.read()
-lineNumber = 0
+    lineNumber = text.count("\n")
 
 deleting = False
+moveDir = 0
 editIndex = len(text)
 
 def run(text):
@@ -59,11 +62,16 @@ while running:
                 text = text[:editIndex] + "- " + text[editIndex:]
                 editIndex += 2
             elif event.key == pg.K_LEFT:
-                editIndex = max(0, editIndex - 1)
+                moveDir = -1
             elif event.key == pg.K_RIGHT:
-                editIndex = min(len(text), editIndex + 1)
+                moveDir = 1
             elif event.key == pg.K_LCTRL:
                 run(text)
+            elif event.key == pg.K_F11:
+                if pg.display.get_window_size() == (WIDTH, HEIGHT):
+                    pg.display.set_mode((display_info.current_w, display_info.current_h), pg.FULLSCREEN)
+                else:
+                    pg.display.set_mode((WIDTH, HEIGHT))
             elif event.unicode:
                 text = text[:editIndex] + event.unicode + text[editIndex:]
                 editIndex += 1
@@ -71,10 +79,15 @@ while running:
         elif event.type == pg.KEYUP:
             if event.key == pg.K_BACKSPACE:
                 deleting = False
+            elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
+                moveDir = 0
 
     if framecount % 6 == 0 and deleting:
         text = text[:editIndex-1] + text[editIndex:]
         editIndex = max(0, editIndex - 1)
+        lineNumber = text.count("\n")
+    if framecount % 6 == 0 and moveDir != 0:
+        editIndex = max(0, min(len(text), editIndex + moveDir))
 
     screen.fill((0, 0, 0))
     text_to_render = text[:editIndex] + "|" + text[editIndex:] if framecount % 60 < 35 else text
@@ -85,6 +98,8 @@ while running:
         number_text = comicSans.render(str(i+1) + ".", True, (255, 255, 255))
         screen.blit(number_text, (20, 20 + i * 28))
 
+    console_rect = pg.Rect(40, HEIGHT - 190, WIDTH - 80, 170)
+    pg.draw.rect(screen, (255, 255, 255), console_rect, 2, border_radius=5)
     console_text = comicSans.render(memory.getVar("console"), True, (255, 255, 255))
     screen.blit(console_text, (50, HEIGHT - 180))
 

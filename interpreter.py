@@ -86,8 +86,10 @@ def forInter(args):
 def runVar(args):
     varType = args[2]
     value = 0
-    if len(args) < 4 or varType == "nbr" or varType == "int":
+    if len(args) < 4:
         value = int(args[2])
+    elif varType == "nbr" or varType == "int":
+        value = int(args[3])
     elif varType == "txt" or varType == "string":
         value = " ".join(args[3:])
     elif varType == "truth" or varType == "bool":
