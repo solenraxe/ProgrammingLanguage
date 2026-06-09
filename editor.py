@@ -1,5 +1,7 @@
 import pygame as pg
 import os
+import tkinter as tk
+from tkinter import filedialog as fd
 import interpreter as inter
 import memory
 
@@ -71,6 +73,19 @@ def clear():
     editIndex = 0
     lineNumber = 0
 
+def loadFile():
+    global text, lineNumber, editIndex
+    filetypes = (
+        ('text files', '*.txt'),
+        ('All files', '*.*')
+    )
+    file = fd.askopenfile(filetypes=filetypes)
+
+    if file:
+        text = file.read()
+        lineNumber = text.count("\n")
+        editIndex = len(text)
+
 class Button():
     def __init__(self, x, y, width, height, text, onClick):
         self.rect = pg.Rect(x, y, width, height)
@@ -93,6 +108,8 @@ buttonsList.append(Button(20, 10, 100, 30, "Run (F9)", lambda: run(text)))
 buttonsList.append(Button(130, 10, 150, 30, "Fullscreen (F11)", lambda: toggleFullscreen()))
 buttonsList.append(Button(290, 10, 100, 30, "Save (F2)", lambda: save()))
 buttonsList.append(Button(400, 10, 100, 30, "Clear (F3)", lambda: clear()))
+buttonsList.append(Button(510, 10, 100, 30, "Load (F8)", lambda: loadFile()))
+
 framecount = 0
 running = True
 while running:
@@ -123,6 +140,8 @@ while running:
                 save()
             elif event.key == pg.K_F3:
                 clear()
+            elif event.key == pg.K_F8:
+                loadFile()
             elif event.unicode:
                 text = text[:editIndex] + event.unicode + text[editIndex:]
                 editIndex += 1

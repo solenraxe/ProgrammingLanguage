@@ -158,7 +158,11 @@ def runFor(args):
 
 def runFunc(args):
     if not memory.getFunc(args[0]):
+        embedCount += 1
+        currentLine += 1
         lines = getFollowingLines()
+        embedCount += 1
+        embedCount += 1
         memory.setFunc(args[0], {
             "lines": lines
         })
