@@ -3,13 +3,15 @@ import memory
 global currentLine, currentScript
 currentLine = 0
 currentScript = []
+embedCount = 0
 
 def getFollowingLines():
-    global currentLine, currentScript
+    global currentLine, currentScript, embedCount
     lines = []
-    i = 1
-    while currentLine + i < len(currentScript) and currentScript[currentLine + i].startswith("- "):
-        lines.append(currentScript[currentLine + i][2:])
+    i = 0
+    init = (embedCount - 1) * 2
+    while currentLine + i < len(currentScript) and currentScript[currentLine + i][init:].startswith("- "):
+        lines.append(currentScript[currentLine + i][init+2:])
         i += 1
     return lines
 
@@ -103,7 +105,9 @@ def runVar(args):
     })
 
 def runIf(args):
-    global currentLine, currentScript
+    global currentLine, currentScript, embedCount
+    embedCount += 1
+    currentLine += 1
     obj1 = memory.getVar(args[0]) or int(args[0])
     obj2 = memory.getVar(args[2]) or int(args[2])
     if ifInter({
@@ -113,10 +117,14 @@ def runIf(args):
     }):
         for line in getFollowingLines():
             runLine(line)
+    embedCount -= 1
+    currentLine -= 1
 
 def runWhile(args):
-    global currentLine, currentScript
+    global currentLine, currentScript, embedCount
     comp = args[1]
+    embedCount += 1
+    currentLine += 1
     lines = getFollowingLines()
 
     newArgs = {
@@ -128,9 +136,13 @@ def runWhile(args):
         "lines": lines
     }
     whileInter(newArgs)
+    currentLine -= 1
+    embedCount -= 1
 
 def runFor(args):
-    global currentLine, currentScript
+    global currentLine, currentScript, embedCount
+    embedCount += 1
+    currentLine += 1
     lines = getFollowingLines()
 
     forArgs = {
@@ -141,6 +153,8 @@ def runFor(args):
         "lines": lines
     }
     forInter(forArgs)
+    currentLine -= 1
+    embedCount -= 1
 
 def runFunc(args):
     if not memory.getFunc(args[0]):

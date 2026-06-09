@@ -20,7 +20,7 @@ screen = pg.display.set_mode((WIDTH, HEIGHT))
 clock = pg.time.Clock()
 
 icon = pg.image.load("SolPy.png")
-pg.display.set_caption("SolPy")
+pg.display.set_caption("SolPy Editor")
 pg.display.set_icon(icon)
 
 text = ""
