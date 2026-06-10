@@ -14,6 +14,7 @@ def getFollowingLines():
     while currentLine + i < len(currentScript) and currentScript[currentLine + i][init:].startswith("- "):
         lines.append(currentScript[currentLine + i][init+2:])
         i += 1
+        
     return lines
 
 def getValue(valueType, value):
@@ -92,19 +93,19 @@ def printInter(args):
     memory.setVar("console", consoleValue + "\n" + "  " + str(args["value"]))
 
 def whileInter(args):
-    num = 0
-    while ifInter(args["ifArgs"]) and num < 1000:
-        num += 1
+    args["ifArgs"]["obj1"] = getValue(args["obj1type"], args["obj1name"])
+    args["ifArgs"]["obj2"] = getValue(args["obj2type"], args["obj2name"])
+    while ifInter(args["ifArgs"]):
+        for i, line in enumerate(args["lines"]):
+            runLine(line, currentLine + i)
         args["ifArgs"]["obj1"] = getValue(args["obj1type"], args["obj1name"])
         args["ifArgs"]["obj2"] = getValue(args["obj2type"], args["obj2name"])
-        for line in args["lines"]:
-            runLine(line)
 
 def forInter(args):
     for i in range(args["begin"], args["end"], args["step"]):
         memory.setVar(args["variableName"], i)
-        for line in args["lines"]:
-            runLine(line)
+        for i, line in enumerate(args["lines"]):
+            runLine(line, currentLine + i)
     memory.deleteVar(args["variableName"])
 
 def runVar(args):
@@ -134,8 +135,8 @@ def runIf(args):
         "comp": args[2],
         "obj2": obj2
     }):
-        for line in getFollowingLines():
-            runLine(line)
+        for i, line in enumerate(getFollowingLines()):
+            runLine(line, currentLine + i)
     embedCount -= 1
     currentLine -= 1
 
@@ -204,32 +205,45 @@ def runFor(args):
     embedCount -= 1
 
 def runFunc(args):
-    print("Running...", args[0])
     global currentLine, currentScript, embedCount
+    embedCount += 1
+    currentLine += 1
     if not memory.getFunc(args[0]):
-        embedCount += 1
-        currentLine += 1
         lines = getFollowingLines()
-        embedCount -= 1
-        currentLine -= 1
         memory.setFunc(args[0], {
-            "lines": lines
+            "lines": lines,
+            "startLine": currentLine,
+            "script": currentScript
         })
     else:
         func = memory.getFunc(args[0])
-        for line in func["lines"]:
-            runLine(line)
+        oldScript = currentScript
+        currentScript = func["script"]
+        for i, line in enumerate(func["lines"]):
+            runLine(line, func["startLine"] + i)
+        currentScript = oldScript
+    embedCount -= 1
+    currentLine -= 1
 
 def runImport(args):
+    global currentLine, currentScript
+    oldScript = currentScript
+    oldLine = currentLine
     moduleName = args[0] + ".txt"
     if not os.path.exists(moduleName): return
     with open(moduleName, "r") as f:
         text = f.read()
         lines = text.split("\n")
-        for line in lines:
-            runLine(line)
+        currentScript = lines
+        currentLine = 0
+        for i, line in enumerate(lines):
+            runLine(line, i)
+    currentScript = oldScript
+    currentLine = oldLine
 
-def runLine(line):
+def runLine(line, lineIndex):
+    global currentLine
+    currentLine = lineIndex
     args = line.split(" ")
     #print("Running line:", line)
 

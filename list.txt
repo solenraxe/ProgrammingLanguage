@@ -5,5 +5,3 @@ func len()
 - while var lenValue ! txt invalid
 - - var lenIndex + int 1
 - - var lenValue = list lenArg.lenIndex
-func len()
-print lenIndex

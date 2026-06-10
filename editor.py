@@ -44,9 +44,9 @@ def run(text):
     lines = text.split("\n")
     inter.currentScript = lines
     inter.currentLine = 0
-    for line in lines:
-        inter.runLine(line)
-        inter.currentLine += 1
+    for i, line in enumerate(lines):
+        inter.runLine(line, i)
+        inter.currentLine = i
 
 def toggleFullscreen():
     if pg.display.get_window_size() == (WIDTH, HEIGHT):
