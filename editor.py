@@ -1,6 +1,5 @@
 import pygame as pg
 import os
-import tkinter as tk
 from tkinter import filedialog as fd
 import interpreter as inter
 import memory
@@ -31,12 +30,13 @@ with open("script.txt", "r") as f:
     text = f.read()
     lineNumber = text.count("\n")
 
-deleting = False
+deleting = 0
 moveDir = 0
 editIndex = len(text)
 
 mainWindow = pg.Rect(20, 50, WIDTH - 40, HEIGHT - 70)
 consoleRect = pg.Rect(40, HEIGHT - 210, WIDTH - 80, 170)
+consoleTextPos = [50, HEIGHT - 200]
 
 def run(text):
     print("Running code...")
@@ -55,12 +55,14 @@ def toggleFullscreen():
         mainWindow.height = display_info.current_h - 70
         consoleRect.width = display_info.current_w - 80
         consoleRect.y = display_info.current_h - 210
+        consoleTextPos[1] = display_info.current_h - 200
     else:
         pg.display.set_mode((WIDTH, HEIGHT))
         mainWindow.width = WIDTH - 40
         mainWindow.height = HEIGHT - 70
         consoleRect.width = WIDTH - 80
         consoleRect.y = HEIGHT - 210
+        consoleTextPos[1] = HEIGHT - 200
 
 def save():
     print("Saving script...")
@@ -104,11 +106,11 @@ class Button():
 
 buttonsList = []
 
-buttonsList.append(Button(20, 10, 100, 30, "Run (F9)", lambda: run(text)))
-buttonsList.append(Button(130, 10, 150, 30, "Fullscreen (F11)", lambda: toggleFullscreen()))
-buttonsList.append(Button(290, 10, 100, 30, "Save (F2)", lambda: save()))
-buttonsList.append(Button(400, 10, 100, 30, "Clear (F3)", lambda: clear()))
-buttonsList.append(Button(510, 10, 100, 30, "Load (F8)", lambda: loadFile()))
+buttonsList.append(Button(20, 10, 100, 30, "Save (F2)", lambda: save()))
+buttonsList.append(Button(130, 10, 100, 30, "Load (F8)", lambda: loadFile()))
+buttonsList.append(Button(240, 10, 100, 30, "Clear (F3)", lambda: clear()))
+buttonsList.append(Button(350, 10, 100, 30, "Run (F9)", lambda: run(text)))
+buttonsList.append(Button(460, 10, 150, 30, "Fullscreen (F11)", lambda: toggleFullscreen()))
 
 framecount = 0
 running = True
@@ -120,7 +122,7 @@ while running:
             running = False
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_BACKSPACE:
-                deleting = True
+                deleting = 1
             elif event.key == pg.K_RETURN:
                 text = text[:editIndex] + "\n" + text[editIndex:]
                 lineNumber += 1
@@ -148,7 +150,7 @@ while running:
                 
         elif event.type == pg.KEYUP:
             if event.key == pg.K_BACKSPACE:
-                deleting = False
+                deleting = 0
             elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
                 moveDir = 0
 
@@ -157,9 +159,12 @@ while running:
                 for button in buttonsList:
                     button.checkClick(event.pos)
 
-    if framecount % 6 == 0 and deleting:
-        text = text[:editIndex-1] + text[editIndex:]
-        editIndex = max(0, editIndex - 1)
+    if deleting > 0: deleting += 1
+    if framecount % 6 == 0 and deleting > 0:
+        repeat = 1
+        if deleting > 24: repeat = round(deleting/24)
+        text = text[:editIndex-repeat] + text[editIndex:]
+        editIndex = max(0, editIndex - repeat)
         lineNumber = text.count("\n")
     if framecount % 6 == 0 and moveDir != 0:
         editIndex = max(0, min(len(text), editIndex + moveDir))
@@ -178,7 +183,7 @@ while running:
 
     pg.draw.rect(screen, (255, 255, 255), consoleRect, 2, border_radius=5)
     console_text = comicSans.render(memory.getVar("console"), True, (255, 255, 255))
-    screen.blit(console_text, (50, HEIGHT - 200))
+    screen.blit(console_text, consoleTextPos)
 
     for button in buttonsList:
         button.draw()
