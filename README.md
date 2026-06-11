@@ -1,3 +1,8 @@
+SUPPORTED OS : Windows
+| File | OS | Architecture |
+|------|----|--------------|
+| editor.exe | Windows | x86_64 |
+
 TECH STACK :
 - Language : Python (100%)
 - Libraries : Pygame (for the text editor window), tKinter, OS
