@@ -1,0 +1,8 @@
+# Demo 3 - While Loops
+
+var a = int 0
+
+while var a < int 50
+- var a + int 2
+
+print a

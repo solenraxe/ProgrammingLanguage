@@ -1,0 +1,9 @@
+# Demo 1 - Variable Assignation
+
+var pi = dec 3.141592653589793238462643383279502884197169399
+var a = int 50
+
+var c = var a
+var c * var pi
+
+print c

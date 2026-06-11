@@ -1,0 +1,5 @@
+# Demo 5 - Import
+
+import demo4
+
+func printSomething

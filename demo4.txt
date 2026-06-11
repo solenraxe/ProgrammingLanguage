@@ -1,0 +1,6 @@
+# Demo 4 - Functions
+
+func printSomething
+- print Something
+
+print Script has finished running

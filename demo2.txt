@@ -1,0 +1,7 @@
+# Demo 2 - For Loops
+
+var a = int 4
+
+for i 0,10,1
+- if var i < var a
+- - print i

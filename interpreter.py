@@ -95,17 +95,23 @@ def printInter(args):
     memory.setVar("console", consoleValue + "\n" + "  " + str(args["value"]))
 
 def whileInter(args):
+    global currentLine
+    whileLine = currentLine
     args["ifArgs"]["obj1"] = getValue(args["obj1type"], args["obj1name"])
     args["ifArgs"]["obj2"] = getValue(args["obj2type"], args["obj2name"])
     while ifInter(args["ifArgs"]):
+        currentLine = whileLine
         for i, line in enumerate(args["lines"]):
             runLine(line, currentLine + i)
         args["ifArgs"]["obj1"] = getValue(args["obj1type"], args["obj1name"])
         args["ifArgs"]["obj2"] = getValue(args["obj2type"], args["obj2name"])
 
 def forInter(args):
+    global currentLine
+    forLine = currentLine
     for i in range(args["begin"], args["end"], args["step"]):
         memory.setVar(args["variableName"], i)
+        currentLine = forLine
         for i, line in enumerate(args["lines"]):
             runLine(line, currentLine + i)
     memory.deleteVar(args["variableName"])

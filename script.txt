@@ -1,4 +1,1 @@
-# For loops
-
-for i 2,5
-- print i
+print Hello, World!
