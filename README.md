@@ -4,7 +4,7 @@ TECH STACK :
 - IDE : Visual Studio Code
 
 A.I. USE:
-- Tried using Claude for debugging once, didn't work (my code is too bad for it to understand 😔), ended up not using any A.I code.
+- Tried using Claude for debugging once, didn't work (my code is too bad for it to understand 😔), ended up not using any A.I generated code.
 
 MOTIVATION :
 I thought it'd be fun.
@@ -18,7 +18,7 @@ Screenshot :
 <img width="300" height="234" alt="image" src="https://github.com/user-attachments/assets/ee17f949-896a-4d2c-95be-65bffd9912e5" />
 
 HOW IT WORKS :
-When opening the app, you get a text editor display (made with pygame), you can type code in and execute it by either clicking the button or pressing F9, a complete documentation will be written below with screenshots.
+When opening the app, you get a text editor display (made with pygame), making it was a lot of fun and not nearly as easy as I tohught, you can type code in it and execute the code by either clicking the button or pressing F9, a complete documentation will be written below with screenshots.
 You can also load a script, save your current one, toggle fullscreen or clear all the code.
 When you're done and click the Run button, a python script will read the text you typed, line by line, and convert it into python code to execute it.
 
@@ -26,9 +26,14 @@ DOCUMENTATION :
 - Object Type : Each object has a type attached to it, for example, nbr 50 is the number 50, txt 50 is the text "50" and so
     on. There's 6 object types as of now, Numbers (nbr/int), Decimals (dec/float), True or False (truth/bool), Text
     (txt/str), Variables (var) and Lists (list).
-  
+    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/5a3f8bd8-ba53-4a81-8677-0236653652e3" />
+    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/f320a4c8-cb3a-4a15-b8dd-5bdb53cd3d84" />
+    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/0c9c09fe-5c4a-400c-b3e4-f9864b571d9f" />
+
+
 - Prints : You can print a variable or text by doing "print VARIABLENAME" or "print TEXT", those will then show up in the
-    console. 
+    console.
+    
     <img width="400" height="225" alt="print" src="https://github.com/user-attachments/assets/d7ca77ef-446d-440a-a53a-5630a3ae51b5" />
 
 - Variable Assignation : You can give certain objects names to re-use them later in the code
