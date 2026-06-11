@@ -1,6 +1,4 @@
-import list
+# For loops
 
-var a = list 67985769,78763976,6793464
-var lenArg = var a
-func len()
-print lenIndex
+for i 2,5
+- print i

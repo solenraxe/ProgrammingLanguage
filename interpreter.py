@@ -247,6 +247,7 @@ def runLine(line, lineIndex):
     global currentLine
     currentLine = lineIndex
     args = line.split(" ")
+    #print("Running line:", line)
 
     if not args or line.startswith("- ") or line.startswith("#") or args[0] == "":
         return
