@@ -1,0 +1,6 @@
+import list
+
+var a = list 67985769,78763976,6793464
+var lenArg = var a
+func len()
+print lenIndex
