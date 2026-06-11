@@ -22,6 +22,8 @@ def getValue(valueType, value):
     if valueType == None: return int(value)
     if valueType == "nbr" or valueType == "int":
         newVal = int(value)
+    elif valueType == "dec" or valueType == "float":
+        newVal = float(value)
     elif valueType == "txt" or valueType == "str":
         newVal = str(value)
     elif valueType == "truth" or valueType == "bool":
