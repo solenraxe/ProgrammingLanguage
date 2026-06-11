@@ -64,3 +64,6 @@ DOCUMENTATION :
 - Imports : Run another script when called, so you can re-use function you wrote in another script in your current one.
 - 
     <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/ae68ecc1-349b-48a8-af21-6016b4af95ec" />
+
+DEMO VIDEO :
+https://youtu.be/KExpSzZWDLg
