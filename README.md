@@ -28,12 +28,14 @@ DOCUMENTATION :
     (txt/str), Variables (var) and Lists (list).
   
 - Prints : You can print a variable or text by doing "print VARIABLENAME" or "print TEXT", those will then show up in the
-    console. <img width="400" height="225" alt="print" src="https://github.com/user-attachments/assets/d7ca77ef-446d-440a-a53a-5630a3ae51b5" />
+    console. 
+    <img width="400" height="225" alt="print" src="https://github.com/user-attachments/assets/d7ca77ef-446d-440a-a53a-5630a3ae51b5" />
 
 - Variable Assignation : You can give certain objects names to re-use them later in the code
     var a = nbr 50 -> a is now equal to 50, print a puts 50 in the console.
     var a + nbr 100 -> a is now equal to 150 (50 + 100), print a puts 150 in the console.
     Existing operations are: = (equals); + (plus); - (minus); * (multiplication); / (division); ** (exponent); % (remainer)
+    
     <img width="400" height="225" alt="variable" src="https://github.com/user-attachments/assets/9ced298f-cbb2-4804-99f8-dd429a0338a3" />
 
 - For Loop : Do something x number of times
@@ -47,7 +49,8 @@ DOCUMENTATION :
     while var a < int 10 will repeat the following lines until a is superior to 10
     <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/228bf7d0-dad2-48a5-a71b-940ea5310eb5" />
 
-- Functions : When called, execute a small piece of code, you first have to tell the function what code to execute, then you can run it a lot of times without rewriting it
+- Functions : When called, execute a small piece of code, you first have to tell the function what code to execute, then you can run it a lot of times without rewriting it.
+    
     <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/9593c7ef-0a11-4c8a-a055-d8fe6ed8cd49" />
 
 - Imports : Run another script when called, so you can re-use function you wrote in another script in your current one
