@@ -134,6 +134,15 @@ while running:
                 moveDir = -1
             elif event.key == pg.K_RIGHT:
                 moveDir = 1
+            elif event.key == pg.K_UP:
+                for i in range(editIndex-1, -1, -1):
+                    if text[i] == "\n":
+                        editIndex = i
+                        break
+            elif event.key == pg.K_DOWN:
+                newIndex = text.find("\n", editIndex)
+                if newIndex > -1:
+                    editIndex = newIndex + 1
             elif event.key == pg.K_F9:
                 run(text)
             elif event.key == pg.K_F11:
