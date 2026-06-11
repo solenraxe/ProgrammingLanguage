@@ -41,6 +41,7 @@ consoleTextPos = [50, HEIGHT - 200]
 def run(text):
     print("Running code...")
     memory.clear()
+    memory.setVar("console", "Console :")
     lines = text.split("\n")
     inter.currentScript = lines
     inter.currentLine = 0
@@ -74,6 +75,7 @@ def clear():
     text = ""
     editIndex = 0
     lineNumber = 0
+    memory.setVar("console", "Console :")
 
 def loadFile():
     global text, lineNumber, editIndex
