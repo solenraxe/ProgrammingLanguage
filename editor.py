@@ -1,203 +1,273 @@
-import pygame as pg
 import os
-from tkinter import filedialog as fd
-import interpreter as inter
 import memory
 
-scriptExists = os.path.exists("script.txt")
-if not scriptExists:
-    with open("script.txt", "w") as f:
-        f.write("print Hello, World!")
+global currentLine, currentScript
+currentLine = 0
+currentScript = []
+embedCount = 0
 
-pg.init()
-pg.font.init()
+def getFollowingLines():
+    global currentLine, currentScript, embedCount
+    lines = []
+    i = 0
+    init = (embedCount - 1) * 2
+    while currentLine + i < len(currentScript) and currentScript[currentLine + i][init:].startswith("- "):
+        lines.append(currentScript[currentLine + i][init+2:])
+        i += 1
+        
+    return lines
 
-comicSans = pg.font.SysFont("Comic Sans MS", 18)
+def getValue(valueType, value):
+    newVal = 0
+    if valueType == None: return int(value)
+    if valueType == "nbr" or valueType == "int":
+        newVal = int(value)
+    elif valueType == "dec" or valueType == "float":
+        newVal = float(value)
+    elif valueType == "txt" or valueType == "str":
+        newVal = str(value)
+    elif valueType == "truth" or valueType == "bool":
+        newVal = value.lower() == "true"
+    elif valueType == "var":
+        newVal = memory.getVar(value) or 0
+    elif valueType == "list":
+        string = value
+        newVal = string.split(",")
+        if string.find(".") != -1:
+            numIndex = string.find(".") + 1
+            indexIsVar = memory.getVar(string[numIndex:]) != None
+            index = memory.getVar(string[numIndex:]) if indexIsVar else int(string[numIndex:])
+            list = memory.getVar(string[:numIndex-1])
+            if len(list) > index:
+                newVal = list[index]
+            else:
+                newVal = "invalid"
 
-display_info = pg.display.Info()
-WIDTH, HEIGHT = 800, 600
+    return newVal
 
-screen = pg.display.set_mode((WIDTH, HEIGHT))
-clock = pg.time.Clock()
+def ifInter(args):
+    comparators = args["comp"]
+    if not comparators:
+        return args["obj1"]
+    
+    valid = False
+    for comp in comparators:
+        if comp == "=":
+            if args["obj1"] == args["obj2"]:
+                valid = True
+        elif comp == "!":
+            if args["obj1"] != args["obj2"]:
+                valid = True
+        elif comp == ">":
+            if args["obj1"] > args["obj2"]:
+                valid = True
+        elif comp == "<":
+            if args["obj1"] < args["obj2"]:
+                valid = True
 
-icon = pg.image.load("SolPy.png")
-pg.display.set_caption("SolPy Editor")
-pg.display.set_icon(icon)
+    return valid
 
-text = ""
-lineNumber = 0
-with open("script.txt", "r") as f:
-    text = f.read()
-    lineNumber = text.count("\n")
+def varInter(args):
+    assignMode = args["mode"]
 
-deleting = 0
-moveDir = 0
-editIndex = len(text)
+    currentValue = memory.getVar(args["name"])
+    if currentValue is None:
+        memory.setVar(args["name"], 0)
+        currentValue = 0
 
-mainWindow = pg.Rect(20, 50, WIDTH - 40, HEIGHT - 70)
-consoleRect = pg.Rect(40, HEIGHT - 210, WIDTH - 80, 170)
-consoleTextPos = [50, HEIGHT - 200]
+    if assignMode == "=" or assignMode == "is" or assignMode == "":
+        memory.setVar(args["name"], args["value"])
+    elif assignMode == "+":
+        memory.setVar(args["name"], currentValue + args["value"])
+    elif assignMode == "-":
+        memory.setVar(args["name"], currentValue - args["value"])
+    elif assignMode == "*":
+        memory.setVar(args["name"], currentValue * args["value"])
+    elif assignMode == "/":
+        memory.setVar(args["name"], currentValue / args["value"])
+    elif assignMode == "%":
+        memory.setVar(args["name"], currentValue % args["value"])
+    elif assignMode == "**":
+        memory.setVar(args["name"], currentValue ** args["value"])
 
-def run(text):
-    print("Running code...")
-    memory.clear()
-    lines = text.split("\n")
-    inter.currentScript = lines
-    inter.currentLine = 0
-    for i, line in enumerate(lines):
-        inter.runLine(line, i)
-        inter.currentLine = i
+def printInter(args):
+    consoleValue = memory.getVar("console") or ""
+    memory.setVar("console", consoleValue + "\n" + "  " + str(args["value"]))
 
-def toggleFullscreen():
-    if pg.display.get_window_size() == (WIDTH, HEIGHT):
-        pg.display.set_mode((display_info.current_w, display_info.current_h), pg.FULLSCREEN)
-        mainWindow.width = display_info.current_w - 40
-        mainWindow.height = display_info.current_h - 70
-        consoleRect.width = display_info.current_w - 80
-        consoleRect.y = display_info.current_h - 210
-        consoleTextPos[1] = display_info.current_h - 200
+def whileInter(args):
+    args["ifArgs"]["obj1"] = getValue(args["obj1type"], args["obj1name"])
+    args["ifArgs"]["obj2"] = getValue(args["obj2type"], args["obj2name"])
+    while ifInter(args["ifArgs"]):
+        for i, line in enumerate(args["lines"]):
+            runLine(line, currentLine + i)
+        args["ifArgs"]["obj1"] = getValue(args["obj1type"], args["obj1name"])
+        args["ifArgs"]["obj2"] = getValue(args["obj2type"], args["obj2name"])
+
+def forInter(args):
+    for i in range(args["begin"], args["end"], args["step"]):
+        memory.setVar(args["variableName"], i)
+        for i, line in enumerate(args["lines"]):
+            runLine(line, currentLine + i)
+    memory.deleteVar(args["variableName"])
+
+def runVar(args):
+    varType = args[2]
+    value = 0
+    if len(args) < 4:
+        value = int(args[2])
+    elif len(args) > 4:
+        value = " ".join(args[3:])
     else:
-        pg.display.set_mode((WIDTH, HEIGHT))
-        mainWindow.width = WIDTH - 40
-        mainWindow.height = HEIGHT - 70
-        consoleRect.width = WIDTH - 80
-        consoleRect.y = HEIGHT - 210
-        consoleTextPos[1] = HEIGHT - 200
+        value = getValue(varType, args[3])
+    
+    varInter({
+        "name": args[0],
+        "mode": args[1],
+        "value": value
+    })
 
-def save():
-    print("Saving script...")
-    with open("script.txt", "w") as f:
-        f.write(text)
+def runIf(args):
+    global currentLine, currentScript, embedCount
+    embedCount += 1
+    currentLine += 1
+    obj1 = getValue(args[0], args[1])
+    obj2 = getValue(args[3], args[4])
+    if ifInter({
+        "obj1": obj1,
+        "comp": args[2],
+        "obj2": obj2
+    }):
+        for i, line in enumerate(getFollowingLines()):
+            runLine(line, currentLine + i)
+    embedCount -= 1
+    currentLine -= 1
 
-def clear():
-    global text, editIndex, lineNumber
-    text = ""
-    editIndex = 0
-    lineNumber = 0
+def runWhile(args):
+    global currentLine, currentScript, embedCount
+    comp = args[2]
+    embedCount += 1
+    currentLine += 1
+    lines = getFollowingLines()
 
-def loadFile():
-    global text, lineNumber, editIndex
-    filetypes = (
-        ('text files', '*.txt'),
-        ('All files', '*.*')
-    )
-    file = fd.askopenfile(filetypes=filetypes)
+    newArgs = {
+        "ifArgs": {
+            "obj1": args[1],
+            "comp": comp,
+            "obj2": args[4]
+        },
+        "obj1type": args[0],
+        "obj1name": args[1],
+        "obj2type": args[3],
+        "obj2name": args[4],
+        "lines": lines
+    }
+    whileInter(newArgs)
+    currentLine -= 1
+    embedCount -= 1
 
-    if file:
-        text = file.read()
-        lineNumber = text.count("\n")
-        editIndex = len(text)
+def runFor(args):
+    global currentLine, currentScript, embedCount
+    embedCount += 1
+    currentLine += 1
+    lines = getFollowingLines()
 
-class Button():
-    def __init__(self, x, y, width, height, text, onClick):
-        self.rect = pg.Rect(x, y, width, height)
-        self.text = text
-        self.onClick = onClick
+    forBounds = args[1].split(",")
+    begin = 0
+    end = 0
+    step = 1
+    if len(forBounds) > 1:
+        begin = forBounds[0]
+        end = forBounds[1]
+        if len(forBounds) > 2:
+            step = forBounds[2]
+    else:
+        end = forBounds[0]
+    
+    begin_val = memory.getVar(begin)
+    end_val = memory.getVar(end)
+    step_val = memory.getVar(step)
+ 
+    forArgs = {
+        "begin": begin_val if begin_val is not None else int(begin),
+        "end": end_val if end_val is not None else int(end),
+        "step": step_val if step_val is not None else int(step),
+        "variableName": args[0],
+        "lines": lines
+    }
 
-    def draw(self):
-        pg.draw.rect(screen, (255, 255, 255), self.rect, 2, border_radius=5)
-        text_surface = comicSans.render(self.text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        screen.blit(text_surface, text_rect)
+    forArgs = {
+        "begin": memory.getVar(begin) or int(begin),
+        "end": memory.getVar(end) or int(end),
+        "step": memory.getVar(step) or int(step),
+        "variableName": args[0],
+        "lines": lines
+    }
+    forInter(forArgs)
+    currentLine -= 1
+    embedCount -= 1
 
-    def checkClick(self, pos):
-        if self.rect.collidepoint(pos):
-            self.onClick()
+def runFunc(args):
+    global currentLine, currentScript, embedCount
+    embedCount += 1
+    currentLine += 1
+    if not memory.getFunc(args[0]):
+        lines = getFollowingLines()
+        memory.setFunc(args[0], {
+            "lines": lines,
+            "startLine": currentLine,
+            "script": currentScript
+        })
+    else:
+        func = memory.getFunc(args[0])
+        oldScript = currentScript
+        currentScript = func["script"]
+        for i, line in enumerate(func["lines"]):
+            runLine(line, func["startLine"] + i)
+        currentScript = oldScript
+    embedCount -= 1
+    currentLine -= 1
 
-buttonsList = []
+def runImport(args):
+    global currentLine, currentScript
+    oldScript = currentScript
+    oldLine = currentLine
+    moduleName = args[0] + ".txt"
+    if not os.path.exists(moduleName): return
+    with open(moduleName, "r") as f:
+        text = f.read()
+        lines = text.split("\n")
+        currentScript = lines
+        currentLine = 0
+        for i, line in enumerate(lines):
+            runLine(line, i)
+    currentScript = oldScript
+    currentLine = oldLine
 
-buttonsList.append(Button(20, 10, 100, 30, "Save (F2)", lambda: save()))
-buttonsList.append(Button(130, 10, 100, 30, "Load (F8)", lambda: loadFile()))
-buttonsList.append(Button(240, 10, 100, 30, "Clear (F3)", lambda: clear()))
-buttonsList.append(Button(350, 10, 100, 30, "Run (F9)", lambda: run(text)))
-buttonsList.append(Button(460, 10, 150, 30, "Fullscreen (F11)", lambda: toggleFullscreen()))
+def runLine(line, lineIndex):
+    global currentLine
+    currentLine = lineIndex
+    args = line.split(" ")
 
-framecount = 0
-running = True
-while running:
-    framecount += 1
-
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            running = False
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_BACKSPACE:
-                deleting = 1
-            elif event.key == pg.K_RETURN:
-                text = text[:editIndex] + "\n" + text[editIndex:]
-                lineNumber += 1
-                editIndex += 1
-            elif event.key == pg.K_TAB:
-                text = text[:editIndex] + "- " + text[editIndex:]
-                editIndex += 2
-            elif event.key == pg.K_LEFT:
-                moveDir = -1
-            elif event.key == pg.K_RIGHT:
-                moveDir = 1
-            elif event.key == pg.K_UP:
-                for i in range(editIndex-1, -1, -1):
-                    if text[i] == "\n":
-                        editIndex = i
-                        break
-            elif event.key == pg.K_DOWN:
-                newIndex = text.find("\n", editIndex)
-                if newIndex > -1:
-                    editIndex = newIndex + 1
-            elif event.key == pg.K_F9:
-                run(text)
-            elif event.key == pg.K_F11:
-                toggleFullscreen()
-            elif event.key == pg.K_F2:
-                save()
-            elif event.key == pg.K_F3:
-                clear()
-            elif event.key == pg.K_F8:
-                loadFile()
-            elif event.unicode:
-                text = text[:editIndex] + event.unicode + text[editIndex:]
-                editIndex += 1
-                
-        elif event.type == pg.KEYUP:
-            if event.key == pg.K_BACKSPACE:
-                deleting = 0
-            elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
-                moveDir = 0
-
-        elif event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                for button in buttonsList:
-                    button.checkClick(event.pos)
-
-    if deleting > 0: deleting += 1
-    if framecount % 6 == 0 and deleting > 0:
-        repeat = 1
-        if deleting > 24: repeat = round(deleting/24)
-        text = text[:editIndex-repeat] + text[editIndex:]
-        editIndex = max(0, editIndex - repeat)
-        lineNumber = text.count("\n")
-    if framecount % 6 == 0 and moveDir != 0:
-        editIndex = max(0, min(len(text), editIndex + moveDir))
-
-    screen.fill((0, 0, 0))
-
-    pg.draw.rect(screen, (255, 255, 255), mainWindow, 2, border_radius=5)
-
-    text_to_render = text[:editIndex] + "|" + text[editIndex:] if framecount % 60 < 35 else text
-    rendered_text = comicSans.render(text_to_render, True, (255, 255, 255))
-    screen.blit(rendered_text, (75, 60))
-
-    for i in range(lineNumber+1):
-        number_text = comicSans.render(str(i+1) + ".", True, (255, 255, 255))
-        screen.blit(number_text, (50, 60 + i * 26))
-
-    pg.draw.rect(screen, (255, 255, 255), consoleRect, 2, border_radius=5)
-    console_text = comicSans.render(memory.getVar("console"), True, (255, 255, 255))
-    screen.blit(console_text, consoleTextPos)
-
-    for button in buttonsList:
-        button.draw()
-
-    pg.display.flip()
-    clock.tick(60)
-
-pg.quit()
+    if not args or line.startswith("- ") or line.startswith("#") or args[0] == "":
+        return
+    
+    if args[0] == "var":
+        runVar(args[1:])
+    elif args[0] == "if":
+        runIf(args[1:])
+    elif args[0] == "print":
+        value = memory.getVar(args[1])
+        if value == None: value = " ".join(args[1:])
+        printInter({
+            "value": value
+        })
+    elif args[0] == "while":
+        runWhile(args[1:])
+    elif args[0] == "for":
+        runFor(args[1:])
+    elif args[0] == "func":
+        runFunc(args[1:])
+    elif args[0] == "import":
+        runImport(args[1:])
+    else:
+        runVar(args)
