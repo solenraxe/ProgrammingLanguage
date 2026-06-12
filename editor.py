@@ -1,6 +1,7 @@
 import pygame as pg
 import os
 from tkinter import filedialog as fd
+import pyperclip
 import interpreter as inter
 import memory
 
@@ -24,15 +25,25 @@ icon = pg.image.load("SolPy.png")
 pg.display.set_caption("SolPy Editor")
 pg.display.set_icon(icon)
 
+previous = []
 text = ""
 lineNumber = 0
 with open("script.txt", "r") as f:
     text = f.read()
     lineNumber = text.count("\n")
 
+previous.append(text)
+
 deleting = 0
 moveDir = 0
 editIndex = len(text)
+
+LINE_HEIGHT = 26
+TEXT_X = 75
+TEXT_Y = 60
+LINE_NUM_X = 50
+
+scrollOffset = 0
 
 mainWindow = pg.Rect(20, 50, WIDTH - 40, HEIGHT - 70)
 consoleRect = pg.Rect(40, HEIGHT - 210, WIDTH - 80, 170)
@@ -71,14 +82,15 @@ def save():
         f.write(text)
 
 def clear():
-    global text, editIndex, lineNumber
+    global text, editIndex, lineNumber, scrollOffset
     text = ""
     editIndex = 0
     lineNumber = 0
+    scrollOffset = 0
     memory.setVar("console", "Console :")
 
 def loadFile():
-    global text, lineNumber, editIndex
+    global text, lineNumber, editIndex, scrollOffset
     filetypes = (
         ('text files', '*.txt'),
         ('All files', '*.*')
@@ -89,6 +101,37 @@ def loadFile():
         text = file.read()
         lineNumber = text.count("\n")
         editIndex = len(text)
+        scrollOffset = 0
+
+def getVisibleLineCount():
+    return max(1, (mainWindow.height - (TEXT_Y - mainWindow.y) - consoleRect.height - 20) // LINE_HEIGHT)
+
+def getCursorLineCol(text, editIndex):
+    before = text[:editIndex]
+    line = before.count("\n")
+    lastNewline = before.rfind("\n")
+    col = editIndex - (lastNewline + 1)
+    return line, col
+
+def clampScroll():
+    global scrollOffset
+    lines = text.split("\n")
+    visible = getVisibleLineCount()
+    maxScroll = max(0, len(lines) - visible)
+    if scrollOffset > maxScroll:
+        scrollOffset = maxScroll
+    if scrollOffset < 0:
+        scrollOffset = 0
+
+def ensureCursorVisible():
+    global scrollOffset
+    cursorLine, _ = getCursorLineCol(text, editIndex)
+    visible = getVisibleLineCount()
+    if cursorLine < scrollOffset:
+        scrollOffset = cursorLine
+    elif cursorLine > scrollOffset + visible - 1:
+        scrollOffset = cursorLine - visible + 1
+    clampScroll()
 
 class Button():
     def __init__(self, x, y, width, height, text, onClick):
@@ -114,16 +157,19 @@ buttonsList.append(Button(240, 10, 100, 30, "Clear (F3)", lambda: clear()))
 buttonsList.append(Button(350, 10, 100, 30, "Run (F9)", lambda: run(text)))
 buttonsList.append(Button(460, 10, 150, 30, "Fullscreen (F11)", lambda: toggleFullscreen()))
 
-framecount = 0
+ctrlPressed = False
+frameCount = 0
 running = True
 while running:
-    framecount += 1
+    frameCount += 1
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
         elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_BACKSPACE:
+            if event.key == pg.K_LCTRL or event.key == pg.K_RCTRL:
+                ctrlPressed = True
+            elif event.key == pg.K_BACKSPACE:
                 deleting = 1
             elif event.key == pg.K_RETURN:
                 text = text[:editIndex] + "\n" + text[editIndex:]
@@ -137,14 +183,19 @@ while running:
             elif event.key == pg.K_RIGHT:
                 moveDir = 1
             elif event.key == pg.K_UP:
-                for i in range(editIndex-1, -1, -1):
-                    if text[i] == "\n":
-                        editIndex = i
-                        break
+                cursorLine, cursorCol = getCursorLineCol(text, editIndex)
+                if cursorLine > 0:
+                    lines = text.split("\n")
+                    targetCol = min(cursorCol, len(lines[cursorLine - 1]))
+                    newIndex = sum(len(l) + 1 for l in lines[:cursorLine - 1]) + targetCol
+                    editIndex = newIndex
             elif event.key == pg.K_DOWN:
-                newIndex = text.find("\n", editIndex)
-                if newIndex > -1:
-                    editIndex = newIndex + 1
+                cursorLine, cursorCol = getCursorLineCol(text, editIndex)
+                lines = text.split("\n")
+                if cursorLine < len(lines) - 1:
+                    targetCol = min(cursorCol, len(lines[cursorLine + 1]))
+                    newIndex = sum(len(l) + 1 for l in lines[:cursorLine + 1]) + targetCol
+                    editIndex = newIndex
             elif event.key == pg.K_F9:
                 run(text)
             elif event.key == pg.K_F11:
@@ -155,42 +206,101 @@ while running:
                 clear()
             elif event.key == pg.K_F8:
                 loadFile()
-            elif event.unicode:
+            elif event.unicode and not ctrlPressed and event.key != pg.K_z and event.key != pg.K_v:
                 text = text[:editIndex] + event.unicode + text[editIndex:]
                 editIndex += 1
-                
+                lineNumber = text.count("\n")
+            elif event.key == pg.K_z:
+                if not ctrlPressed or len(previous) < 1: continue
+                text = previous[-1]
+                if editIndex > len(text): editIndex = len(text)
+                previous.pop()
+                lineNumber = text.count("\n")
+            elif event.key == pg.K_v:
+                if not ctrlPressed: continue
+                clipBoard = pyperclip.paste()
+                text = text[:editIndex] + clipBoard + text[editIndex:]
+                editIndex += len(clipBoard)
+                lineNumber = text.count("\n")
+
+            ensureCursorVisible()
+
         elif event.type == pg.KEYUP:
             if event.key == pg.K_BACKSPACE:
                 deleting = 0
             elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
                 moveDir = 0
+            elif event.key == pg.K_LCTRL or event.key == pg.K_RCTRL:
+                ctrlPressed = False
 
         elif event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:
                 for button in buttonsList:
                     button.checkClick(event.pos)
+                
+                if mainWindow.collidepoint(event.pos):
+                    cursorLine = min((event.pos[1] - 50)//LINE_HEIGHT + scrollOffset, lineNumber)
+                    lines = text.split("\n")
+                    lineWidth, _ = comicSans.size(lines[cursorLine])
+                    cursorCol = min(round((event.pos[0] - TEXT_X)/lineWidth*len(lines[cursorLine])), len(lines[cursorLine]))
+                    newIndex = sum(len(l) + 1 for l in lines[:cursorLine]) + cursorCol
+                    editIndex = newIndex
+
+        elif event.type == pg.MOUSEWHEEL:
+            if mainWindow.collidepoint(pg.mouse.get_pos()):
+                scrollOffset -= event.y
+                clampScroll()
 
     if deleting > 0: deleting += 1
-    if framecount % 6 == 0 and deleting > 0:
+    if frameCount % 6 == 0 and deleting > 0:
         repeat = 1
         if deleting > 24: repeat = round(deleting/24)
         text = text[:editIndex-repeat] + text[editIndex:]
         editIndex = max(0, editIndex - repeat)
         lineNumber = text.count("\n")
-    if framecount % 6 == 0 and moveDir != 0:
+        ensureCursorVisible()
+    if frameCount % 6 == 0 and moveDir != 0:
         editIndex = max(0, min(len(text), editIndex + moveDir))
+        ensureCursorVisible()
+
+    if frameCount % 60 == 0 and len(previous) >= 1:
+        if previous[-1] != text:
+            previous.append(text)
+            if len(previous) > 600:
+                previous = previous[-600:]
 
     screen.fill((0, 0, 0))
 
     pg.draw.rect(screen, (255, 255, 255), mainWindow, 2, border_radius=5)
 
-    text_to_render = text[:editIndex] + "|" + text[editIndex:] if framecount % 60 < 35 else text
-    rendered_text = comicSans.render(text_to_render, True, (255, 255, 255))
-    screen.blit(rendered_text, (75, 60))
+    cursorLine, cursorCol = getCursorLineCol(text, editIndex)
+    lines = text.split("\n")
+    blinkOn = frameCount % 60 < 35
 
-    for i in range(lineNumber+1):
+    visible = getVisibleLineCount()
+    clampScroll()
+
+    old_clip = screen.get_clip()
+    clipRect = pg.Rect(mainWindow.x + 2, mainWindow.y + 2, mainWindow.width - 4, mainWindow.height - 4)
+    screen.set_clip(clipRect)
+
+    for i in range(scrollOffset, min(len(lines), scrollOffset + visible + 1)):
+        lineText = lines[i]
+        if i == cursorLine and blinkOn:
+            lineText = lineText[:cursorCol] + "|" + lineText[cursorCol:]
+        y = TEXT_Y + (i - scrollOffset) * LINE_HEIGHT
+        rendered_text = comicSans.render(lineText, True, (255, 255, 255))
+        screen.blit(rendered_text, (TEXT_X, y))
+
+    screen.set_clip(old_clip)
+
+    lineNumClip = pg.Rect(mainWindow.x + 2, mainWindow.y + 2, mainWindow.width - 4, mainWindow.height - 4)
+    screen.set_clip(lineNumClip)
+    for i in range(scrollOffset, min(len(lines), scrollOffset + visible + 1)):
+        y = TEXT_Y + (i - scrollOffset) * LINE_HEIGHT
         number_text = comicSans.render(str(i+1) + ".", True, (255, 255, 255))
-        screen.blit(number_text, (50, 60 + i * 26))
+        screen.blit(number_text, (LINE_NUM_X, y))
+    screen.set_clip(old_clip)
 
     pg.draw.rect(screen, (255, 255, 255), consoleRect, 2, border_radius=5)
     console_text = comicSans.render(memory.getVar("console"), True, (255, 255, 255))
