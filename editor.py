@@ -15,7 +15,7 @@ pg.font.init()
 
 comicSans = pg.font.SysFont("Comic Sans MS", 18)
 
-display_info = pg.display.Info()
+displayInfo = pg.display.Info()
 WIDTH, HEIGHT = 800, 600
 
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -62,12 +62,12 @@ def run(text):
 
 def toggleFullscreen():
     if pg.display.get_window_size() == (WIDTH, HEIGHT):
-        pg.display.set_mode((display_info.current_w, display_info.current_h), pg.FULLSCREEN)
-        mainWindow.width = display_info.current_w - 40
-        mainWindow.height = display_info.current_h - 70
-        consoleRect.width = display_info.current_w - 80
-        consoleRect.y = display_info.current_h - 210
-        consoleTextPos[1] = display_info.current_h - 200
+        pg.display.set_mode((displayInfo.current_w, displayInfo.current_h), pg.FULLSCREEN)
+        mainWindow.width = displayInfo.current_w - 40
+        mainWindow.height = displayInfo.current_h - 70
+        consoleRect.width = displayInfo.current_w - 80
+        consoleRect.y = displayInfo.current_h - 210
+        consoleTextPos[1] = displayInfo.current_h - 200
     else:
         pg.display.set_mode((WIDTH, HEIGHT))
         mainWindow.width = WIDTH - 40
@@ -141,9 +141,9 @@ class Button():
 
     def draw(self):
         pg.draw.rect(screen, (255, 255, 255), self.rect, 2, border_radius=5)
-        text_surface = comicSans.render(self.text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        screen.blit(text_surface, text_rect)
+        textSurface = comicSans.render(self.text, True, (255, 255, 255))
+        textRect = textSurface.get_rect(center=self.rect.center)
+        screen.blit(textSurface, textRect)
 
     def checkClick(self, pos):
         if self.rect.collidepoint(pos):
@@ -206,7 +206,7 @@ while running:
                 clear()
             elif event.key == pg.K_F8:
                 loadFile()
-            elif event.unicode and not ctrlPressed and event.key != pg.K_z and event.key != pg.K_v:
+            elif (event.unicode and not ctrlPressed) or event.unicode == "#":
                 text = text[:editIndex] + event.unicode + text[editIndex:]
                 editIndex += 1
                 lineNumber = text.count("\n")
@@ -222,6 +222,9 @@ while running:
                 text = text[:editIndex] + clipBoard + text[editIndex:]
                 editIndex += len(clipBoard)
                 lineNumber = text.count("\n")
+            elif event.key == pg.K_s:
+                if not ctrlPressed: continue
+                save()
 
             ensureCursorVisible()
 
