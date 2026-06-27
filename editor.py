@@ -245,7 +245,10 @@ while running:
                     cursorLine = min((event.pos[1] - 50)//LINE_HEIGHT + scrollOffset, lineNumber)
                     lines = text.split("\n")
                     lineWidth, _ = comicSans.size(lines[cursorLine])
-                    cursorCol = min(round((event.pos[0] - TEXT_X)/lineWidth*len(lines[cursorLine])), len(lines[cursorLine]))
+                    if lineWidth != 0:
+                        cursorCol = min(round((event.pos[0] - TEXT_X)/lineWidth*len(lines[cursorLine])), len(lines[cursorLine]))
+                    else:
+                        cursorCol = 0
                     newIndex = sum(len(l) + 1 for l in lines[:cursorLine]) + cursorCol
                     editIndex = newIndex
 
@@ -262,7 +265,7 @@ while running:
         editIndex = max(0, editIndex - repeat)
         lineNumber = text.count("\n")
         ensureCursorVisible()
-    if frameCount % 6 == 0 and moveDir != 0:
+    if frameCount % 8 == 0 and moveDir != 0:
         editIndex = max(0, min(len(text), editIndex + moveDir))
         ensureCursorVisible()
 
@@ -283,19 +286,23 @@ while running:
     visible = getVisibleLineCount()
     clampScroll()
 
-    old_clip = screen.get_clip()
+    oldClip = screen.get_clip()
     clipRect = pg.Rect(mainWindow.x + 2, mainWindow.y + 2, mainWindow.width - 4, mainWindow.height - 4)
     screen.set_clip(clipRect)
 
     for i in range(scrollOffset, min(len(lines), scrollOffset + visible + 1)):
         lineText = lines[i]
-        if i == cursorLine and blinkOn:
-            lineText = lineText[:cursorCol] + "|" + lineText[cursorCol:]
+        if i == cursorLine:
+            if blinkOn:
+                lineText = lineText[:cursorCol] + "|" + lineText[cursorCol:]
+            else:
+                lineText = lineText[:cursorCol] + " " + lineText[cursorCol:]
+
         y = TEXT_Y + (i - scrollOffset) * LINE_HEIGHT
         rendered_text = comicSans.render(lineText, True, (255, 255, 255))
         screen.blit(rendered_text, (TEXT_X, y))
 
-    screen.set_clip(old_clip)
+    screen.set_clip(oldClip)
 
     lineNumClip = pg.Rect(mainWindow.x + 2, mainWindow.y + 2, mainWindow.width - 4, mainWindow.height - 4)
     screen.set_clip(lineNumClip)
@@ -303,11 +310,11 @@ while running:
         y = TEXT_Y + (i - scrollOffset) * LINE_HEIGHT
         number_text = comicSans.render(str(i+1) + ".", True, (255, 255, 255))
         screen.blit(number_text, (LINE_NUM_X, y))
-    screen.set_clip(old_clip)
+    screen.set_clip(oldClip)
 
     pg.draw.rect(screen, (255, 255, 255), consoleRect, 2, border_radius=5)
-    console_text = comicSans.render(memory.getVar("console"), True, (255, 255, 255))
-    screen.blit(console_text, consoleTextPos)
+    consoleText = comicSans.render(memory.getVar("console"), True, (255, 255, 255))
+    screen.blit(consoleText, consoleTextPos)
 
     for button in buttonsList:
         button.draw()
