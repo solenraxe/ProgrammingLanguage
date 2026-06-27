@@ -32,43 +32,43 @@ DOCUMENTATION :
     on. There's 6 object types as of now, Numbers (nbr/int), Decimals (dec/float), True or False (truth/bool), Text
     (txt/str), Variables (var) and Lists (list).
   
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/5a3f8bd8-ba53-4a81-8677-0236653652e3" />
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/f320a4c8-cb3a-4a15-b8dd-5bdb53cd3d84" />
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/0c9c09fe-5c4a-400c-b3e4-f9864b571d9f" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/5a3f8bd8-ba53-4a81-8677-0236653652e3" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/f320a4c8-cb3a-4a15-b8dd-5bdb53cd3d84" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/0c9c09fe-5c4a-400c-b3e4-f9864b571d9f" />
 
 
 - Prints : You can print a variable or text by doing "print VARIABLENAME" or "print TEXT", those will then show up in the
     console.
     
-    <img width="400" height="225" alt="print" src="https://github.com/user-attachments/assets/d7ca77ef-446d-440a-a53a-5630a3ae51b5" />
+    <img width="400" height="250" alt="print" src="https://github.com/user-attachments/assets/d7ca77ef-446d-440a-a53a-5630a3ae51b5" />
 
 - Variable Assignation : You can give certain objects names to re-use them later in the code
     var a = nbr 50 -> a is now equal to 50, print a puts 50 in the console.
     var a + nbr 100 -> a is now equal to 150 (50 + 100), print a puts 150 in the console.
     Existing operations are: = (equals); + (plus); - (minus); * (multiplication); / (division); ** (exponent); % (remainer)
     
-    <img width="400" height="225" alt="variable" src="https://github.com/user-attachments/assets/9ced298f-cbb2-4804-99f8-dd429a0338a3" />
+    <img width="400" height="250" alt="variable" src="https://github.com/user-attachments/assets/9ced298f-cbb2-4804-99f8-dd429a0338a3" />
 
 - For Loop : Do something x number of times
     for i 10 runs the following lines 10 times, each time the i variable increases by 1. You can also do for i 5,10 which starts at 10 and goes to 10 (not included)
     Or you could do for i 3,7,2 which goes from 3 to 7 but adds +2 each time instead of 1.
   
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/01869922-f7a5-4ccd-925b-897d9765da58" />
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/9f566b97-380b-4bf5-9d9f-e2b40332ecd7" />
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/1a98e7a5-d0ce-4a19-9cd3-90d2aa856b18" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/01869922-f7a5-4ccd-925b-897d9765da58" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/9f566b97-380b-4bf5-9d9f-e2b40332ecd7" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/1a98e7a5-d0ce-4a19-9cd3-90d2aa856b18" />
 
 - While Loop : Repeat something until a condition is met (!MIGHT CRASH IF CONDITION CAN NEVER BE FULLFILLED)
     while var a < int 10 will repeat the following lines until a is superior to 10.
   
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/228bf7d0-dad2-48a5-a71b-940ea5310eb5" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/228bf7d0-dad2-48a5-a71b-940ea5310eb5" />
 
 - Functions : When called, execute a small piece of code, you first have to tell the function what code to execute, then you can run it a lot of times without rewriting it.
     
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/9593c7ef-0a11-4c8a-a055-d8fe6ed8cd49" />
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/9593c7ef-0a11-4c8a-a055-d8fe6ed8cd49" />
 
 - Imports : Run another script when called, so you can re-use function you wrote in another script in your current one.
-- 
-    <img width="400" height="225" alt="image" src="https://github.com/user-attachments/assets/ae68ecc1-349b-48a8-af21-6016b4af95ec" />
+  
+    <img width="400" height="250" alt="image" src="https://github.com/user-attachments/assets/ae68ecc1-349b-48a8-af21-6016b4af95ec" />
 
 DEMO VIDEO :
 https://youtu.be/KExpSzZWDLg
