@@ -43,8 +43,8 @@ DOCUMENTATION :
     <img width="400" height="275" alt="print" src="https://github.com/user-attachments/assets/d7ca77ef-446d-440a-a53a-5630a3ae51b5" />
 
 - Variable Assignation : You can give certain objects names to re-use them later in the code. 
-    "var a = nbr 50" -> a is now equal to 50, print a puts 50 in the console.
-    "var a + nbr 100" -> a is now equal to 150 (50 + 100), print a puts 150 in the console.
+    "var a = nbr 50" -> a is now equal to 50, "print a" puts 50 in the console.
+    "var a + nbr 100" -> a is now equal to 150 (50 + 100), "print a" puts 150 in the console.
     Existing operations are: = (equals); + (plus); - (minus); * (multiplication); / (division); ** (exponent); % (remainer)
     
     <img width="400" height="275" alt="variable" src="https://github.com/user-attachments/assets/9ced298f-cbb2-4804-99f8-dd429a0338a3" />
@@ -69,6 +69,11 @@ DOCUMENTATION :
 - Imports : Run another script when called, so you can re-use function you wrote in another script in your current one.
   
     <img width="400" height="275" alt="image" src="https://github.com/user-attachments/assets/ae68ecc1-349b-48a8-af21-6016b4af95ec" />
+
+FUNCTIONALITIES :
+- Comparators can be used successively, so <= works as inferior or equal, <> works as inferior or superior (basically not equal to), <! works as not inferior to and so on.
+- You don't have to explicitely define a variable before doing operations on it, you can just do "var a + int 50" and it'll work.
+- More to come maybe...
 
 DEMO VIDEO :
 https://youtu.be/KExpSzZWDLg
